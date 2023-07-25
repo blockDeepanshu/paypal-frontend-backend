@@ -1,13 +1,24 @@
-import { useState, useEffect } from "react";
+import { useContext, useState } from "react";
 import { DollarOutlined, SwapOutlined } from "@ant-design/icons";
 import { Modal, Input, InputNumber } from "antd";
+import { useContractWrite } from "wagmi";
+import ABI from "../abi.json";
+import UserContext from "../context/UserContext";
 
 function RequestAndPay() {
+  const { userRequest } = useContext(UserContext);
+
   const [payModal, setPayModal] = useState(false);
   const [requestModal, setRequestModal] = useState(false);
   const [requestAmount, setRequestAmount] = useState(5);
   const [requestAddress, setRequestAddress] = useState("");
   const [requestMessage, setRequestMessage] = useState("");
+
+  const { data, isSuccess, write } = useContractWrite({
+    address: "0x560bF635c81a5F7F9a920b5E37fd6dF2ad0Cc9Ae",
+    abi: ABI,
+    functionName: "createPaymentRequest",
+  });
 
   const showPayModal = () => {
     setPayModal(true);
@@ -70,11 +81,11 @@ function RequestAndPay() {
             showPayModal();
           }}
         >
-          <DollarOutlined
-            style={{ fontSize: "26px", backgroundColor: "black" }}
-          />
+          <DollarOutlined style={{ fontSize: "26px" }} />
           Pay
-          <div className="numReqs">2</div>
+          {userRequest && userRequest["0"].length > 0 && (
+            <div className="numReqs">{userRequest["0"].length}</div>
+          )}
         </div>
         <div
           className="quickOption"

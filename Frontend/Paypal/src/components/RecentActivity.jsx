@@ -1,4 +1,6 @@
 import { Card, Table } from "antd";
+import { useContext } from "react";
+import UserContext from "../context/UserContext";
 
 const history = [
   {
@@ -104,11 +106,13 @@ const columns = [
 ];
 
 function RecentActivity() {
+  const { transactionHistory } = useContext(UserContext);
+
   return (
     <Card title="Recent Activity" style={{ width: "100%", minHeight: "663px" }}>
       {history && (
         <Table
-          dataSource={history}
+          dataSource={transactionHistory}
           columns={columns}
           pagination={{ position: ["bottomCenter"], pageSize: 8 }}
         />

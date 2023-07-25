@@ -14,7 +14,7 @@ const convertArrayToObject = (arr) => {
   const data = arr.map((element, index) => ({
     key: (arr.length + 1 - index).toString(),
     type: element[0] === "+" ? "Receive" : "Send",
-    amount: element[1],
+    amount: element[1] / 10000000000,
     message: element[2],
     address: `${element[3].slice(0, 4)}...${element[3].slice(38)}`,
     subject: element[4],
