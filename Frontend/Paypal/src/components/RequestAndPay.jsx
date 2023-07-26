@@ -1,12 +1,14 @@
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { DollarOutlined, SwapOutlined } from "@ant-design/icons";
 import { Modal, Input, InputNumber } from "antd";
-import { useContractWrite } from "wagmi";
+import { useContractWrite, useAccount } from "wagmi";
 import ABI from "../abi.json";
 import UserContext from "../context/UserContext";
+import { parseEther } from "viem";
 
 function RequestAndPay() {
-  const { userRequest } = useContext(UserContext);
+  const { userRequest, getUserAccountDetails } = useContext(UserContext);
+  const { address, isConnected } = useAccount();
 
   const [payModal, setPayModal] = useState(false);
   const [requestModal, setRequestModal] = useState(false);
@@ -14,7 +16,13 @@ function RequestAndPay() {
   const [requestAddress, setRequestAddress] = useState("");
   const [requestMessage, setRequestMessage] = useState("");
 
-  const { data, isSuccess, write } = useContractWrite({
+  const { isSuccess, write } = useContractWrite({
+    address: "0x560bF635c81a5F7F9a920b5E37fd6dF2ad0Cc9Ae",
+    abi: ABI,
+    functionName: "completePaymentRequest",
+  });
+
+  const { isSuccess: successRequest, write: writeRequest } = useContractWrite({
     address: "0x560bF635c81a5F7F9a920b5E37fd6dF2ad0Cc9Ae",
     abi: ABI,
     functionName: "createPaymentRequest",
@@ -34,6 +42,10 @@ function RequestAndPay() {
     setRequestModal(false);
   };
 
+  useEffect(() => {
+    getUserAccountDetails(address, isConnected);
+  }, [isSuccess, successRequest]);
+
   return (
     <>
       <Modal
@@ -41,16 +53,37 @@ function RequestAndPay() {
         open={payModal}
         onOk={() => {
           hidePayModal();
+          write({
+            args: [0],
+            from: address,
+            value: parseEther(String(userRequest["1"][0] / 10000000000)),
+          });
         }}
         onCancel={hidePayModal}
         okText="Proceed To Pay"
         cancelText="Cancel"
-      ></Modal>
+      >
+        {userRequest && userRequest["0"].length > 0 && (
+          <>
+            <h2>Sending payment to {userRequest["3"][0]}</h2>
+            <h3>Value: {userRequest["1"][0] / 10000000000} Matic</h3>
+            <p>{userRequest["2"][0]}</p>
+          </>
+        )}
+      </Modal>
       <Modal
         title="Request A Payment"
         open={requestModal}
         onOk={() => {
           hideRequestModal();
+          writeRequest({
+            args: [
+              requestAddress,
+              requestMessage,
+              String(requestAmount * 10000000000),
+            ],
+            from: address,
+          });
         }}
         onCancel={hideRequestModal}
         okText="Proceed To Request"
@@ -69,7 +102,7 @@ function RequestAndPay() {
         />
         <p>Message</p>
         <Input
-          placeholder="Lunch Bill..."
+          placeholder="Water Bill..."
           value={requestMessage}
           onChange={(val) => setRequestMessage(val.target.value)}
         />

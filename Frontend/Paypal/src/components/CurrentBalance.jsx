@@ -10,10 +10,6 @@ function CurrentBalance() {
         <div style={{ lineHeight: "70px" }}>$ {dollars}</div>
         <div style={{ fontSize: "20px" }}>Available</div>
       </div>
-      <div className="balanceOptions">
-        <div className="extraOption">Swap Tokens</div>
-        <div className="extraOption">Bridge Tokens</div>
-      </div>
     </Card>
   );
 }
